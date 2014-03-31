@@ -14,8 +14,14 @@
     <!--[if lt IE 8]>
     <link rel="stylesheet" href="stylesheets/ie.css">
     <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <style type="text/css">
+        #mapDiv1 { height:400px; width:600px; margin:20px }
+        #mapDiv2 { height:400px; width:600px; margin:20px; left:620px; top:-420px;}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=1.2"></script> 
+    <script type="text/javascript" src="http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js"></script>
   </head>
   <body>
       <div id="header">
@@ -38,41 +44,126 @@
           <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
         </div>
 
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
-
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
-
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
-
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
-
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+        <input id="btnText" type="button" value="改变GridSize"  />
+        <input id="btnPoint" type="button" value="改变MaxZoom"  />
+        <input id="btnStyles" type="button" value="改变Styles"  />
+        <input id="btnAddMarkers" type="button" value="添加Markers"  />
+        <input id="btnRemoveMarkers" type="button" value="删除Markers"  />    
+        <div id="mapDiv1"></div>
+        <div id="mapDiv2"></div>
       </section>
 
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    <script type="text/javascript">
+         var EXAMPLE_URL = "http://api.map.baidu.com/library/MarkerClusterer/1.2/examples/";
+         var map = new BMap.Map("mapDiv1");
+         map.enableScrollWheelZoom();
+         var point = new BMap.Point(116.404, 39.915);
+         map.centerAndZoom(point, 4);
+
+         var map2 = new BMap.Map("mapDiv2");
+         map2.enableScrollWheelZoom();
+         map2.centerAndZoom(point, 4);
+
+         map.addEventListener("zoomend", function () {
+             map2.zoomTo(map.getZoom());
+             map2.panTo(map.getCenter());
+         });
+
+         map.addEventListener("moveend", function () {
+             map2.zoomTo(map.getZoom());
+             map2.panTo(map.getCenter());
+         });
+
+         var MAX = 10;
+         var markers = [];
+         var pt = null;
+         var i = 0;
+         for (; i < MAX; i++) {
+             pt = new BMap.Point(Math.random() * 40 + 85, Math.random() * 30 + 21);
+             markers.push(new BMap.Marker(pt));
+
+             map2.addOverlay(new BMap.Marker(pt));
+         }
+         //最简单的用法，生成一个marker数组，然后调用markerClusterer类即可。
+         var markerClusterer = new BMapLib.MarkerClusterer(map, {markers:markers});
+
+         //更改一些参数设置，比如GridSize， maxZoom
+         var btnOpen = document.getElementById('btnText');
+         btnOpen.onclick = function (event) {
+             markerClusterer.setGridSize(100);          
+         };
+
+         var newPt = new BMap.Point(116.404, 39.895);
+         var btnClose = document.getElementById('btnPoint');
+         btnClose.onclick = function () {
+             markerClusterer.setMaxZoom(7);         
+         };
+
+          var myStyles = [{
+              url: EXAMPLE_URL + 'images/heart30.png',
+              size: new BMap.Size(30, 26),
+              opt_anchor: [16, 0],
+              textColor: '#ff00ff',
+              opt_textSize: 10
+          }, {
+              url: EXAMPLE_URL + 'images/heart40.png',
+              size: new BMap.Size(40, 35),
+              opt_anchor: [40, 35],
+              textColor: '#ff0000',
+              opt_textSize: 12
+          }, {
+              url: EXAMPLE_URL + 'images/heart50.png',
+              size: new BMap.Size(50, 44),
+              opt_anchor: [32, 0],
+              textColor: 'white',
+              opt_textSize: 14
+          }];
+
+          var btnStyles = document.getElementById('btnStyles');
+          btnStyles.onclick = function (event) {
+              markerClusterer.setStyles(myStyles);
+          };
+
+          //添加和删除Markers
+          var newMarkers = getNewMarkers(MAX);
+          var newMarkers2 = newMarkers;
+
+          var btnAddMarkers = document.getElementById('btnAddMarkers');
+          btnAddMarkers.onclick = function (event) {
+              if(!newMarkers.length){
+                  //如果之前的markers被清空了，则重新生成
+                  newMarkers = getNewMarkers(MAX);
+                  newMarkers2 = newMarkers;
+              };
+              markerClusterer.addMarkers(newMarkers);
+              for (i = 0; i < MAX; i++) {
+                  map2.addOverlay(newMarkers2[i]);
+              }
+          };
+
+          var btnRemoveMarkers = document.getElementById('btnRemoveMarkers');
+          btnRemoveMarkers.onclick = function (event) {         
+              markerClusterer.removeMarkers(newMarkers);
+              for (i = 0; i < MAX; i++) {
+                  map2.removeOverlay(newMarkers2[i]);
+              }
+          };
+          /**
+           * 得到一个随机的marker数组。
+           * @param  {Number} 数组的长度
+           * @return {Array} 随机marker数组
+           */
+          function getNewMarkers(MAX){
+            var newMarkers = [];
+            for (i = 0; i < MAX; i++) {
+                  pt = new BMap.Point(Math.random() * 40 + 85, Math.random() * 30 + 21);
+                  newMarkers.push(new BMap.Marker(pt));               
+              }
+            return newMarkers;   
+          }
+    </script>
     
   </body>
 </html>
